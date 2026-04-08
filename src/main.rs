@@ -553,7 +553,11 @@ mod tests {
     use super::*;
 
     fn write_temp_json(content: &str) -> std::path::PathBuf {
-        let path = std::env::temp_dir().join(format!("stacks-test-{}.json", std::process::id()));
+        let path = std::env::temp_dir().join(format!(
+            "stacks-test-{}-{}.json",
+            std::process::id(),
+            std::thread::current().name().unwrap_or("unknown")
+        ));
         fs::write(&path, content).unwrap();
         path
     }
