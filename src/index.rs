@@ -91,9 +91,7 @@ pub fn ensure_fresh(
 }
 
 fn walk_markdown(project_root: &Path) -> ignore::Walk {
-    WalkBuilder::new(project_root)
-        .hidden(false)
-        .build()
+    WalkBuilder::new(project_root).hidden(false).build()
 }
 
 fn index_file(
