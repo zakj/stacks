@@ -92,8 +92,7 @@ pub fn ensure_fresh(
 
 fn walk_markdown(project_root: &Path) -> ignore::Walk {
     WalkBuilder::new(project_root)
-        .hidden(true)
-        .filter_entry(|e| e.file_name().to_string_lossy() != ".stacks")
+        .hidden(false)
         .build()
 }
 
