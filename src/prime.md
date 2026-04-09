@@ -1,6 +1,13 @@
 # Documentation Search with stacks
 
-This project uses `stacks` for semantic documentation search. Use it to find relevant patterns, architecture decisions, and conventions before writing code.
+This project uses `stacks` for semantic documentation search. Use it to find relevant patterns, architecture decisions, and conventions.
+
+## When to use stacks
+
+- **Grep**: you know the exact string or symbol (`filter_set`, `6001`, `handleAuth`)
+- **stacks search**: you know the concept but not the vocabulary or location ("how do we handle auth?", "what's the proxy setup?")
+- Use both together: stacks for discovery, then grep for exhaustive coverage
+- Run stacks queries in the main conversation, not in sub-agents — they have Bash access but don't know stacks exists
 
 ## Workflow
 
@@ -37,8 +44,9 @@ Use `search` when you know what you need but not where it is. Use `index -g` whe
 
 ## Maintaining Documentation
 
-When making code changes, check if related documentation needs updating:
+After making code changes, check if related documentation needs updating:
 
-- Search for sections related to what you're changing
+- `stacks search` finds docs that describe the behavior you changed (conceptual matches)
+- `grep` finds docs that reference specific functions or files you changed (literal matches)
 - Update docs that describe patterns you've modified
 - Add documentation for new patterns or conventions
