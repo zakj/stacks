@@ -23,7 +23,7 @@ pub fn scan_sources(store: &Store) -> Result<HashMap<String, String>, Error> {
     let project_root = store.project_root();
     let stacks_dir = store.root();
     let mut on_disk = HashMap::new();
-    for entry in walk_markdown(project_root).flatten() {
+    for entry in walk_markdown(project_root, stacks_dir).flatten() {
         let path = entry.path();
         if !path.is_file() || path.extension().is_none_or(|ext| ext != "md") {
             continue;
@@ -90,8 +90,12 @@ pub fn ensure_fresh(
     Ok(())
 }
 
-fn walk_markdown(project_root: &Path) -> ignore::Walk {
-    WalkBuilder::new(project_root).hidden(false).build()
+fn walk_markdown(project_root: &Path, stacks_dir: &Path) -> ignore::Walk {
+    let mut builder = WalkBuilder::new(project_root);
+    builder.hidden(false);
+    builder.current_dir(project_root);
+    builder.add_ignore(stacks_dir.join("ignore"));
+    builder.build()
 }
 
 fn index_file(
@@ -391,5 +395,27 @@ mod tests {
     fn base36_conversion() {
         assert_eq!(to_base36(0, 4), "0000");
         assert_eq!(to_base36(36, 4).chars().nth(1), Some('1'));
+    }
+
+    #[test]
+    fn scan_sources_respects_stacks_ignore() {
+        let root = std::env::temp_dir().join(format!(
+            "stacks-test-ignore-{}-{}",
+            std::process::id(),
+            std::thread::current().name().unwrap_or("unknown")
+        ));
+        let _ = std::fs::remove_dir_all(&root);
+        std::fs::create_dir_all(root.join(".git")).unwrap();
+        std::fs::write(root.join("included.md"), "# Keep\n").unwrap();
+        std::fs::write(root.join("excluded.md"), "# Drop\n").unwrap();
+        let stacks_dir = root.join(".stacks");
+        std::fs::create_dir_all(&stacks_dir).unwrap();
+        std::fs::write(stacks_dir.join("ignore"), "excluded.md\n").unwrap();
+
+        let store = crate::store::Store::find_or_create(&root).unwrap();
+        let on_disk = scan_sources(&store).unwrap();
+        assert!(on_disk.contains_key("included.md"));
+        assert!(!on_disk.contains_key("excluded.md"));
+        let _ = std::fs::remove_dir_all(&root);
     }
 }

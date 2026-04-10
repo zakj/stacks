@@ -90,7 +90,7 @@ impl Store {
     fn open(root: PathBuf) -> Result<Self, Error> {
         let gitignore = root.join(".gitignore");
         if !gitignore.exists() {
-            fs::write(&gitignore, "*\n")?;
+            fs::write(&gitignore, "*\n!/ignore\n")?;
         }
 
         ensure_sqlite_vec_loaded();
